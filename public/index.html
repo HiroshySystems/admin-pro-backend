@@ -1,48 +1,38 @@
 <html lang="en">
   <head>
     <meta name="google-signin-scope" content="profile email">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://unpkg.com/jwt-decode/build/jwt-decode.js"></script>
-
-    <script src="//code.jquery.com/jquery-latest.min.js"></script>
-<script src="//norfipc.com/js/jquery.cookie.js"></script>
-<script src="//norfipc.com/js/cookiecompliance.js"></script>
-
   </head>
   <body>
-    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"</div>
-      <div id="g_id_onload"
-         data-client_id="56359761195-4lh9f5rpr6cjtapkhekcfn0b74n7j5so.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse">
-    </div>
-    <div class="g_id_signin" data-type="standard"></div>
-
-    <a href="#" onclick="eliminarCookies();">Sign out</a>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <div id="buttonDiv"></div>
     
     <script>
-      function decodeJwtResponse(r){
-        var decoded = jwt_decode(r);
-        return decoded;
+      
+      var url="http://localhost:3000/api/login/google";
+      function handleCredentialResponse(response) {
+        //console.log("Encoded JWT ID token: " + response.credential);
+        fetch(url,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({token:response.credential})
+        })
+        .then(resp=>resp.json())
+        .then(data=>console.log('Nuestro server : ',data))
+        .catch(console.log)
       }
-      function handleCredentialResponse(googleUser) {
-        const responsePayload = decodeJwtResponse(googleUser.credential);
-        console.log("ID: " + responsePayload.sub);
-        console.log('Full Name: ' + responsePayload.name);
-        console.log('Given Name: ' + responsePayload.given_name);
-        console.log('Family Name: ' + responsePayload.family_name);
-        console.log("Image URL: " + responsePayload.picture);
-        console.log("Email: " + responsePayload.email);
-        console.log(responsePayload);
-        console.log(googleUser.credential);
-      };
-      
-      function signOut() {
-            var auth2 = gapi.auth2.getAuthInstance();
-            auth2.signOut().then(function () {
-            console.log('User signed out.');
-            });
-      }      
-      
-    </script>
+
+      window.onload = function () {
+        google.accounts.id.initialize({
+          client_id: "890605422351-2a3ntmnboepe33l51paejf5i0i6tl8ru.apps.googleusercontent.com",
+          callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("buttonDiv"),
+          { theme: "outline", size: "large" }  // customization attributes
+        );
+        google.accounts.id.prompt(); // also display the One Tap dialog
+      }
+  </script>
+   
   </body>
 </html>

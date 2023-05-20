@@ -9,7 +9,6 @@ const login = async(req,res = response) =>{
     try {
         //verificar email
         const usuarioDB = await Usuario.findOne({email});
-
         if(!usuarioDB){
             return res.status(404).json({
                 ok:false,
@@ -28,10 +27,9 @@ const login = async(req,res = response) =>{
 
         //Generar el Token
         const token = await generarJWT(usuarioDB.id);
-        
         res.json({
             ok:true,
-            msg:'hola mundo',
+            msg:'Login Correcto',
             token
         })
     } catch (error) {
@@ -44,46 +42,82 @@ const login = async(req,res = response) =>{
 }
 
 const googleSigIn = async(req,res=response)=>{
-    const googleToken = req.body.token;
-    try {
-        const {name,email,picture} = await googleVerify(googleToken);
+    // const googleToken = req.body.token;
+    // try {
+    //     const {name,email,picture} = await googleVerify(googleToken);
+
+    //     const usuarioDB = await Usuario.findOne({email});
+    //     let usuario;
+    //     if(!usuarioDB){
+    //         //si no existe el usuario
+    //         usuario = new Usuario({
+    //             nombre:name,
+    //             email,
+    //             password:'@@@',
+    //             img:picture,
+    //             google:true
+    //         })
+    //     }else{
+    //         //existe usuario
+    //         usuario = usuarioDB;
+    //         usuario.google = true;
+    //         usuario.password = '@@@';
+    //     }
+
+    //     //guardar en BD
+    //     await usuario.save();
+
+
+    //     //Generar el Token - JWT
+    //     const token = await generarJWT(usuario.id);
+
+    //     res.json({
+    //         ok:true,
+    //         msg:'Google SignIn',
+    //         token
+    //     })
+    // } catch (error) {
+    //     res.status(401).json({
+    //         ok:false,
+    //         msg:'El Token no es correcto'
+    //     })
+    // }  
+    try{
+        const {email,name,picture} = await googleVerify(req.body.token);
 
         const usuarioDB = await Usuario.findOne({email});
         let usuario;
         if(!usuarioDB){
-            //si no existe el usuario
             usuario = new Usuario({
                 nombre:name,
-                email,
+                email:email,
                 password:'@@@',
                 img:picture,
                 google:true
             })
         }else{
-            //existe usuario
             usuario = usuarioDB;
             usuario.google = true;
-            usuario.password = '@@@';
         }
-
-        //guardar en BD
+        //guardar usuario
         await usuario.save();
-
-
         //Generar el Token - JWT
         const token = await generarJWT(usuario.id);
 
+
         res.json({
             ok:true,
-            msg:'Google SignIn',
+            email,name,picture,
             token
-        })
-    } catch (error) {
-        res.status(401).json({
+        }) 
+    }catch(error){
+        console.log(error);
+        res.status(400).json({
             ok:false,
-            msg:'El Token no es correcto'
-        })
-    }   
+            msg:'token no valido'
+        }) 
+    }
+    
     
 }
 
