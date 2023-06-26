@@ -7,7 +7,7 @@ const { generarJWT } = require('../helpers/jwt');
 const getUsuarios = async (req,res)=>{
 
     const desde = Number(req.query.desde) || 0;
-    console.log(desde);
+    //console.log(desde);
 /*
     const usuarios = await Usuario.find({},'nombre email role google')
                             .skip(desde)
@@ -106,8 +106,14 @@ const actualizarUsuario = async(req,res = response) =>{
         // otra forma, llave 1 
         // delete campos.password;
         // delete campos.google;
-
-        campos.email = email;
+        if(!usuarioDB.google){
+            campos.email = email;
+        }else if(usuarioDB.email !== email){
+            return res.status(400).json({
+                ok:false,
+                msg:'Usuario de google no puede cambiar su correo'
+            })
+        }
         const usuarioActualizado = await Usuario.findByIdAndUpdate(uid,campos,{new:true});  //{new:true} es para que muestre la data nueva
         
         res.json({
